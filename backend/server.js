@@ -21,13 +21,20 @@ app.use(corsMiddleware);
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/', (_req, res) => res.json({ ok: true, service: 'restaurant-reservation-api' }));
-app.get('/api/health', (_req, res) => {
-  const mongoose = require('mongoose');
-  res.json({
-    ok: true,
-    time: new Date().toISOString(),
-    dbState: mongoose.connection.readyState,
-  });
+app.get('/api/health', async (req, res) => {
+  try {
+    const mongoose = require('mongoose');
+    const state = mongoose.connection.readyState;
+    // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
+    res.json({ 
+      mongoConnectionState: state,
+      stateLabel: ['disconnected', 'connected', 'connecting', 'disconnecting'][state],
+      mongoUriPresent: !!process.env.MONGO_URI,
+      jwtSecretPresent: !!process.env.JWT_SECRET
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.use('/api/auth', authRoutes);
