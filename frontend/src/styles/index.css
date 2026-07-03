@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+  body {
+    @apply bg-ink-900 text-bone-50 font-sans;
+    font-feature-settings: 'ss01' on, 'ss02' on, 'cv11' on;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  /* Default cursor hidden when custom cursor is active (see Cursor component).
+     We hide the OS cursor globally on pointer-fine devices to make the
+     custom circle unambiguous. On touch / coarse pointers we restore it. */
+  @media (pointer: fine) {
+    html.has-custom-cursor,
+    html.has-custom-cursor * {
+      cursor: none !important;
+    }
+  }
+  /* Lenis: required CSS to prevent layout jank. */
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+  }
+  .lenis.lenis-smooth [data-lenis-prevent] {
+    overscroll-behavior: contain;
+  }
+  .lenis.lenis-stopped {
+    overflow: hidden;
+  }
+  ::selection {
+    @apply bg-gold-400 text-ink-900;
+  }
+  input,
+  select,
+  textarea,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+  input,
+  select,
+  textarea {
+    background-color: transparent;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply relative inline-flex items-center justify-center gap-2 rounded-full
+           font-medium tracking-wide
+           px-7 py-3 text-sm
+           text-ink-900
+           transition-all duration-300 ease-out-expo
+           shadow-gold-glow-sm
+           hover:shadow-gold-glow
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none;
+    background-image: linear-gradient(
+      135deg,
+      #e7cd86 0%,
+      #d4a24c 45%,
+      #c08a32 100%
+    );
+  }
+  .btn-primary:hover {
+    background-image: linear-gradient(
+      135deg,
+      #f1e1b3 0%,
+      #e7cd86 40%,
+      #d4a24c 100%
+    );
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full
+           border border-bone-200/25 text-bone-50
+           px-7 py-3 text-sm tracking-wide
+           transition-all duration-300 ease-out-expo
+           hover:border-gold-400/60 hover:text-gold-300 hover:bg-bone-50/5
+           disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .field-label {
+    @apply text-xs uppercase tracking-[0.18em] text-bone-300 font-mono;
+  }
+  .field-input {
+    @apply w-full rounded-md border border-bone-200/15 bg-ink-800
+           px-3 py-2.5 text-sm text-bone-50
+           placeholder:text-bone-400
+           focus:outline-none focus:border-gold-400/70 focus:ring-1 focus:ring-gold-400/40
+           transition-colors duration-200;
+  }
+  .grain {
+    position: relative;
+    isolation: isolate;
+  }
+  .grain::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 50;
+    opacity: 0.14;
+    mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='240' height='240'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1   0 0 0 0 1   0 0 0 0 1   0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+  .grain-soft::after {
+    opacity: 0.07;
+  }
+  .accent-italic {
+    @apply italic text-gold-400;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 16px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+.animate-fade-up {
+  animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
