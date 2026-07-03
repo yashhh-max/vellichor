@@ -30,11 +30,7 @@ const connectDB = async () => {
   } catch (err) {
     cached.promise = null; // Reset promise so next invocation retries
     console.error(`[db] Connection error: ${err.message}`);
-    if (process.env.NODE_ENV !== 'production') {
-      // Do not crash Vercel worker threads in production
-      throw err;
-    }
-    process.exit(1);
+    throw err;
   }
 
   return cached.conn;
