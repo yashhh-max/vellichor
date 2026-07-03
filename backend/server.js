@@ -24,6 +24,7 @@ app.get('/', (_req, res) => res.json({ ok: true, service: 'restaurant-reservatio
 app.get('/api/health', async (req, res) => {
   try {
     const mongoose = require('mongoose');
+    await connectDB();
     const state = mongoose.connection.readyState;
     // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
     res.json({ 
@@ -33,8 +34,12 @@ app.get('/api/health', async (req, res) => {
       jwtSecretPresent: !!process.env.JWT_SECRET
     });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ 
+      message: 'Health check database connection failed',
+      error: err.message 
+    });
   }
+});
 // Database connection middleware to ensure connection is ready before route execution
 app.use(async (req, res, next) => {
   try {
