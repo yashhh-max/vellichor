@@ -1,21 +1,43 @@
 const mongoose = require('mongoose');
 
+let cached = global.mongoose;
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
 const connectDB = async () => {
-  try {
-    const uri = process.env.MONGO_URI;
-    console.log('[db] MONGO_URI env var is defined:', !!uri);
-    if (!uri) {
-      throw new Error('MONGO_URI is not set. Copy .env.example to .env and configure.');
-    }
-    const conn = await mongoose.connect(uri);
-    console.log(`[db] MongoDB connected: ${conn.connection.host}/${conn.connection.name}`);
-  } catch (err) {
-    console.error(`[db] Connection error: ${err.message}`);
-    // Never exit the process in serverless environments
-    if (process.env.NODE_ENV !== 'production') {
-      process.exit(1);
-    }
+  const uri = process.env.MONGO_URI;
+  if (!uri) {
+    throw new Error('MONGO_URI is not set. Copy .env.example to .env and configure.');
   }
+
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    const opts = {
+      bufferCommands: false,
+    };
+    cached.promise = mongoose.connect(uri, opts).then((m) => {
+      console.log(`[db] MongoDB connected: ${m.connection.host}/${m.connection.name}`);
+      return m;
+    });
+  }
+
+  try {
+    cached.conn = await cached.promise;
+  } catch (err) {
+    cached.promise = null; // Reset promise so next invocation retries
+    console.error(`[db] Connection error: ${err.message}`);
+    if (process.env.NODE_ENV !== 'production') {
+      // Do not crash Vercel worker threads in production
+      throw err;
+    }
+    process.exit(1);
+  }
+
+  return cached.conn;
 };
 
 module.exports = connectDB;

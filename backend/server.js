@@ -35,6 +35,17 @@ app.get('/api/health', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+// Database connection middleware to ensure connection is ready before route execution
+app.use(async (req, res, next) => {
+  try {
+    await connectDB();
+    next();
+  } catch (err) {
+    res.status(500).json({
+      message: 'Database connection failed. Please ensure Atlas whitelisting and URI credentials are correct.',
+      error: err.message,
+    });
+  }
 });
 
 app.use('/api/auth', authRoutes);
