@@ -70,8 +70,10 @@ npm install
 npm run dev                # http://localhost:5173
 ```
 
-If your backend is hosted somewhere other than `http://localhost:5001`, set
-`VITE_API_URL` in `frontend/.env.local` (e.g. `VITE_API_URL=https://api.example.com/api`).
+In local development, the frontend and backend run as separate processes. Set
+`VITE_API_URL=http://localhost:5001/api` in `frontend/.env.local` so the dev server can communicate with the backend.
+
+In production (unified Vercel deployment), leave `VITE_API_URL` unset/empty. The Axios instance automatically falls back to same-origin relative routing `/api`.
 
 ### 3. Verify with curl
 
@@ -277,23 +279,26 @@ backend/
 4. CORS is already configured to allow `CLIENT_ORIGIN` plus `localhost:5173` /
    `localhost:3000` for local dev.
 
-### Frontend (Vercel)
+### Unified Monorepo Deployment (Vercel)
 
-1. Import the repo into Vercel, set the **root directory** to `frontend`.
-2. Framework preset: **Vite**.
-3. Build command: `npm run build`. Output: `dist`.
-4. Environment variable: `VITE_API_URL` = `https://your-backend.example.com/api`
-5. Vercel will serve the static build and React Router will handle client-side
-   routes. For Vercel SPA routing, the default settings work; deep links
-   resolve to `index.html` automatically.
+The repository is configured for unified deployment (frontend + backend inside a single Vercel project) using the [vercel.json](file:///c:/Users/yashw/OneDrive/Desktop/assignment/vercel.json) config file at the root.
 
-### Cross-origin notes
+1. Import the repository root folder on Vercel.
+2. Vercel will automatically discover the services:
+   - **frontend**: served from `/` (using Vite preset)
+   - **backend**: served from `/api/*` (routing backend API endpoints)
+3. Set the following environment variables on the Vercel project:
+   - `NODE_ENV` = `production`
+   - `MONGO_URI` = your Atlas connection string
+   - `JWT_SECRET` = your production random secret string
+   - `JWT_EXPIRES_IN` = `7d`
+4. Leave `VITE_API_URL` unset (empty). The frontend automatically routes API calls relatively to `/api` on the same host.
+5. In this unified production state, CORS is completely bypassed because the frontend and backend share the exact same host and origin.
 
-- The backend uses a strict CORS allowlist. If you deploy the frontend to a
-  new domain, add it to `allowedOrigins` in `backend/server.js` (or set
-  `CLIENT_ORIGIN` and redeploy).
-- JWTs are stored in `localStorage` on the client and attached as
-  `Authorization: Bearer …` from the axios interceptor.
+### Local Development fallback
+- Backend runs on `http://localhost:5001`.
+- Frontend runs on `http://localhost:5173` and requires `VITE_API_URL=http://localhost:5001/api` in a local `.env` or `.env.local` to override the same-origin relative fallback.
+- Local development has permissive CORS enabled for `localhost` ports.
 
 ---
 
