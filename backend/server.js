@@ -21,9 +21,14 @@ app.use(corsMiddleware);
 app.use(express.json({ limit: '1mb' }));
 
 app.get('/', (_req, res) => res.json({ ok: true, service: 'restaurant-reservation-api' }));
-app.get('/api/health', (_req, res) =>
-  res.json({ ok: true, time: new Date().toISOString() })
-);
+app.get('/api/health', (_req, res) => {
+  const mongoose = require('mongoose');
+  res.json({
+    ok: true,
+    time: new Date().toISOString(),
+    dbState: mongoose.connection.readyState,
+  });
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/reservations', reservationRoutes);
