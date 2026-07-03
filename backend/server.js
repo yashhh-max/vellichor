@@ -36,15 +36,16 @@ app.use('/api/*', (_req, res) => res.status(404).json({ message: 'Not found' }))
 
 app.use(errorHandler);
 
-const start = async () => {
-  await connectDB();
+// Connect to database (Mongoose buffers operations automatically)
+connectDB().catch((err) => {
+  console.error('[db] connection error:', err);
+});
+
+if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`[server] listening on http://localhost:${PORT}`);
     console.log(`[cors]   mode: ${isProd ? 'production (strict)' : 'development (any localhost)'}, client: ${CLIENT_ORIGIN}`);
   });
-};
+}
 
-start().catch((err) => {
-  console.error('[server] fatal startup error:', err);
-  process.exit(1);
-});
+module.exports = app;
